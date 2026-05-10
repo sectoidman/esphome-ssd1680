@@ -54,9 +54,9 @@ void SSD1680EPaper::dump_config() {
   LOG_PIN("  DC Pin: ", this->dc_pin_);
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
   LOG_PIN("  Busy Pin: ", this->busy_pin_);
-  ESP_LOGCONFIG(TAG, "Display Width: ", this->width_);
-  ESP_LOGCONFIG(TAG, "Display Height: ", this->height_);
-  ESP_LOGCONFIG(TAG, "Display Size: ", this->display_size);
+  ESP_LOGCONFIG(TAG, "Display Width: %d", this->width_);
+  ESP_LOGCONFIG(TAG, "Display Height: %d", this->height_);
+  ESP_LOGCONFIG(TAG, "Display Size: %d", this->display_size);
 
   if (this->busy_pin_ != nullptr) {
     ESP_LOGCONFIG(TAG, "  Current BUSY state: %s", this->busy_pin_->digital_read() ? "HIGH (busy)" : "LOW (idle)");
