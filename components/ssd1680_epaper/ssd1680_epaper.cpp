@@ -9,6 +9,7 @@ namespace ssd1680_epaper {
 static const char *const TAG = "ssd1680_epaper";
 
 // VERSION 2 - Deferred init for debugging
+static const int SSD1680_DISPLAY_BUFFER_SIZE_BYTES = (296 * 176) / 8
 
 void SSD1680EPaper::setup() {
   ESP_LOGI(TAG, "=== SSD1680 SETUP V4 - WITH POWER PIN ===");
@@ -42,8 +43,8 @@ void SSD1680EPaper::setup() {
   this->spi_setup();
   
   // Initialize the display buffer
-  this->init_internal_(this->display_size);
-  memset(this->buffer_, 0xFF, this->display_size);
+  this->init_internal_(SSD1680_DISPLAY_BUFFER_SIZE_BYTES);
+  memset(this->buffer_, 0xFF, SSD1680_DISPLAY_BUFFER_SIZE_BYTES);
   
   this->initialized_ = false;
   ESP_LOGI(TAG, "Setup complete, display init deferred");
