@@ -15,6 +15,8 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void set_dc_pin(GPIOPin *dc_pin) { dc_pin_ = dc_pin; }
   void set_reset_pin(GPIOPin *reset_pin) { reset_pin_ = reset_pin; }
   void set_busy_pin(GPIOPin *busy_pin) { busy_pin_ = busy_pin; }
+  void set_height(int height) { height_ = height }
+  void set_width(int width) { width_ = width; }
 
   void setup() override;
   void dump_config() override;
@@ -25,8 +27,8 @@ class SSD1680EPaper : public display::DisplayBuffer,
 
  protected:
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
-  int get_height_internal() override { return 296; }
-  int get_width_internal() override { return 128; }
+  int get_height_internal() override { return height_; }
+  int get_width_internal() override { return width_; }
 
   void init_display_();
   void hw_reset_();
@@ -40,8 +42,11 @@ class SSD1680EPaper : public display::DisplayBuffer,
   GPIOPin *dc_pin_{nullptr};
   GPIOPin *reset_pin_{nullptr};
   GPIOPin *busy_pin_{nullptr};
-  
+
   bool initialized_{false};
+
+  int height_{0};
+  int width_{0};
 };
 
 }  // namespace ssd1680_epaper
