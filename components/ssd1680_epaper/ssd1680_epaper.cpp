@@ -9,7 +9,7 @@ namespace ssd1680_epaper {
 static const char *const TAG = "ssd1680_epaper";
 
 // VERSION 2 - Deferred init for debugging
-static const int SSD1680_DISPLAY_BUFFER_SIZE_BYTES = (296 * 176) / 8
+static const int SSD1680_DISPLAY_BUFFER_SIZE_BYTES = (296 * 176) / 8;
 
 void SSD1680EPaper::setup() {
   ESP_LOGI(TAG, "=== SSD1680 SETUP V4 - WITH POWER PIN ===");
