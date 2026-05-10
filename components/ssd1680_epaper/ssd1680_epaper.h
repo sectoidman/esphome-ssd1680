@@ -15,7 +15,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void set_dc_pin(GPIOPin *dc_pin) { dc_pin_ = dc_pin; }
   void set_reset_pin(GPIOPin *reset_pin) { reset_pin_ = reset_pin; }
   void set_busy_pin(GPIOPin *busy_pin) { busy_pin_ = busy_pin; }
-  void set_height(int height) { height_ = height }
+  void set_height(int height) { height_ = height; }
   void set_width(int width) { width_ = width; }
 
   void setup() override;
