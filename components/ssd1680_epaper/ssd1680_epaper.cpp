@@ -9,14 +9,12 @@ namespace ssd1680_epaper {
 static const char *const TAG = "ssd1680_epaper";
 
 // VERSION 2 - Deferred init for debugging
-// Display dimensions for 2.9" display
-static const uint16_t WIDTH = 128;
-static const uint16_t HEIGHT = 296;
-static const uint32_t ALLSCREEN_BYTES = (WIDTH * HEIGHT) / 8;
 
 void SSD1680EPaper::setup() {
   ESP_LOGI(TAG, "=== SSD1680 SETUP V4 - WITH POWER PIN ===");
-  
+
+  this->display_size = this->get_width_internal() * this->get_height_internal();
+
   // CRITICAL: Enable display power on GPIO7
   // The CrowPanel requires GPIO7 HIGH to power the e-paper display
   gpio_config_t pwr_conf = {};
@@ -44,8 +42,8 @@ void SSD1680EPaper::setup() {
   this->spi_setup();
   
   // Initialize the display buffer
-  this->init_internal_(ALLSCREEN_BYTES);
-  memset(this->buffer_, 0xFF, ALLSCREEN_BYTES);
+  this->init_internal_(this->display_size);
+  memset(this->buffer_, 0xFF, this->display_size);
   
   this->initialized_ = false;
   ESP_LOGI(TAG, "Setup complete, display init deferred");
@@ -56,6 +54,10 @@ void SSD1680EPaper::dump_config() {
   LOG_PIN("  DC Pin: ", this->dc_pin_);
   LOG_PIN("  Reset Pin: ", this->reset_pin_);
   LOG_PIN("  Busy Pin: ", this->busy_pin_);
+  ESP_LOGCONFIG(TAG, "Display Width: ", this->width_);
+  ESP_LOGCONFIG(TAG, "Display Height: ", this->height_);
+  ESP_LOGCONFIG(TAG, "Display Size: ", this->display_size);
+
   if (this->busy_pin_ != nullptr) {
     ESP_LOGCONFIG(TAG, "  Current BUSY state: %s", this->busy_pin_->digital_read() ? "HIGH (busy)" : "LOW (idle)");
   }
@@ -318,7 +320,7 @@ void SSD1680EPaper::display_frame_() {
   // ESPHome buffer: bits set = foreground (COLOR_ON), cleared = background
   // We need to invert so drawing shows up correctly
   this->command_(0x24);
-  for (uint32_t i = 0; i < ALLSCREEN_BYTES; i++) {
+  for (uint32_t i = 0; i < this->display_size; i++) {
     this->data_(~this->buffer_[i]);  // INVERTED for correct polarity
   }
   
@@ -330,7 +332,7 @@ void SSD1680EPaper::display_frame_() {
   this->data_(0x00);
   
   this->command_(0x26);
-  for (uint32_t i = 0; i < ALLSCREEN_BYTES; i++) {
+  for (uint32_t i = 0; i < this->display_size; i++) {
     this->data_(0x00);
   }
   
@@ -388,13 +390,13 @@ void SSD1680EPaper::update() {
 void SSD1680EPaper::draw_absolute_pixel_internal(int x, int y, Color color) {
   if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal())
     return;
-    
-  uint32_t pos = (y * (WIDTH / 8)) + (x / 8);
+
+  uint32_t pos = (y * (this->get_width_internal() / 8)) + (x / 8);
   uint8_t bit = 0x80 >> (x % 8);
-  
-  if (pos >= ALLSCREEN_BYTES)
+
+  if (pos >= this->display_size)
     return;
-    
+
   if (color.is_on()) {
     this->buffer_[pos] |= bit;
   } else {

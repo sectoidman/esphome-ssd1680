@@ -47,6 +47,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
 
   int height_{0};
   int width_{0};
+  int display_size{0};
 };
 
 }  // namespace ssd1680_epaper
