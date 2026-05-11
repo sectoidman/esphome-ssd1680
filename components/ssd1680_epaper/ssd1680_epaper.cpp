@@ -140,7 +140,7 @@ void SSD1680EPaper::configure_address_space_() {
   const uint8_t y_start_end[4] = {0x0,
                                   0x0,
                                   static_cast<uint8_t>((this->height_ - 1) & 0xFF),
-                                  static_cast<uint8_t>((this->height_ - 1) & 0xFF00) };
+                                  static_cast<uint8_t>(((this->height_ - 1) & 0xFF00) >> 8) };
   ESP_LOGD(TAG, "Start (lower): 0x%X Start (upper): 0x%X End (lower): 0x%X End (upper): 0x%X", y_start_end[0], y_start_end[1], y_start_end[2], y_start_end[3]);
   this->command_(0x45);
   this->send_data_(y_start_end, sizeof(y_start_end));
@@ -154,7 +154,7 @@ void SSD1680EPaper::configure_driver_output_() {
   // Driver output control
   ESP_LOGD(TAG, "Setting driver output (0x01)");
   const uint8_t output_control[3] = {static_cast<uint8_t>((this->height_ - 1) & 0xFF),
-                                     static_cast<uint8_t>((this->height_ - 1) & 0xFF00),
+                                     static_cast<uint8_t>(((this->height_ - 1) & 0xFF00) >> 8),
                                      0x0 };
   ESP_LOGD(TAG, "MUX (lower): 0x%X MUX (upper): 0x%X", output_control[0], output_control[1]);
   this->command_(0x01);
