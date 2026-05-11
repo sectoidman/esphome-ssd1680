@@ -127,17 +127,17 @@ void SSD1680EPaper::send_data_(const uint8_t *data, size_t len) {
 void SSD1680EPaper::configure_address_space_() {
   // RAM X address
   ESP_LOGD(TAG, "Setting RAM X (0x44)");
-  uint8_t x_start_end[2] = { 0x0, ((this->width_ - 8) / 8) + (this->width_ % 8 != 0) };
+  const uint8_t x_start_end[2] = { 0x0, static_cast<uint8_t>(((this->width_ - 8) / 8) + (this->width_ % 8 != 0)) };
   this->command_(0x44);
-  this->send_data_(&x_start_end, sizeof(x_start_end));
+  this->send_data_(x_start_end, sizeof(x_start_end));
   // this->data_(0x00);
   // this->data_(0x0F);
 
   // RAM Y address
   ESP_LOGD(TAG, "Setting RAM Y (0x45)");
-  uint8_t y_start_end[4] = {0x0, 0x0, this->height_ & 0xFF, this->height_ & 0xFF00 };
+  const uint8_t y_start_end[4] = {0x0, 0x0, static_cast<uint8_t>(this->height_ & 0xFF), static_cast<uint8_t>(this->height_ & 0xFF00) };
   this->command_(0x45);
-  this->send_data_(&y_start_end, sizeof(y_start_end));
+  this->send_data_(y_start_end, sizeof(y_start_end));
   //this->data_(0x00);
   //this->data_(0x00);
   //this->data_(0x27);
