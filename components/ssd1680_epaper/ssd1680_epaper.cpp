@@ -13,7 +13,7 @@ static const char *const TAG = "ssd1680_epaper";
 void SSD1680EPaper::setup() {
   ESP_LOGI(TAG, "=== SSD1680 SETUP V4 - WITH POWER PIN ===");
 
-  this->display_size = (this->width_ * this->height_) / 8;
+  this->display_size = ((this->width_ % 8) ? (this->width_ / 8 + 1) : (this->width_ / 8)) * this-> height_; // (this->width_ * this->height_) / 8;
 
   // CRITICAL: Enable display power on GPIO7
   // The CrowPanel requires GPIO7 HIGH to power the e-paper display
@@ -26,25 +26,25 @@ void SSD1680EPaper::setup() {
   gpio_set_level(GPIO_NUM_7, 1);
   ESP_LOGI(TAG, "GPIO7 (display power) set HIGH");
   delay(100);  // Give power time to stabilize
-  
+
   this->dc_pin_->setup();
   this->dc_pin_->digital_write(false);
-  
+
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->setup();
     this->reset_pin_->digital_write(true);
   }
-  
+
   if (this->busy_pin_ != nullptr) {
     this->busy_pin_->setup();
   }
-  
+
   this->spi_setup();
-  
+
   // Initialize the display buffer
   this->init_internal_(this->display_size);
   memset(this->buffer_, 0xFF, this->display_size);
-  
+
   this->initialized_ = false;
   ESP_LOGI(TAG, "Setup complete, display init deferred");
 }
