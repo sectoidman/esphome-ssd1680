@@ -39,6 +39,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void full_update_();
   void display_frame_();
   void configure_address_space_();
+  void configure_driver_output_();
 
 
   GPIOPin *dc_pin_{nullptr};
