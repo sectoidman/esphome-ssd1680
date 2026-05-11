@@ -128,6 +128,8 @@ void SSD1680EPaper::configure_address_space_() {
   ESP_LOGD(TAG, "Setting RAM X (0x44)");
   const uint8_t x_start_end[2] = { 0x0,
                                    static_cast<uint8_t>(((this->width_ - 8) / 8) + (this->width_ % 8 != 0)) };
+
+  ESP_LOGD(TAG, "Start: 0x%X End: 0x%X", x_start_end[0], x_start_end[1]);
   this->command_(0x44);
   this->send_data_(x_start_end, sizeof(x_start_end));
   // this->data_(0x00);
@@ -139,6 +141,7 @@ void SSD1680EPaper::configure_address_space_() {
                                   0x0,
                                   static_cast<uint8_t>((this->height_ - 1) & 0xFF),
                                   static_cast<uint8_t>((this->height_ - 1) & 0xFF00) };
+  ESP_LOGD(TAG, "Start (lower): 0x%X Start (upper): 0x%X End (lower): 0x%X End (upper): 0x%X", y_start_end[0], y_start_end[1], y_start_end[2], y_start_end[3]);
   this->command_(0x45);
   this->send_data_(y_start_end, sizeof(y_start_end));
   //this->data_(0x00);
@@ -153,6 +156,7 @@ void SSD1680EPaper::configure_driver_output_() {
   const uint8_t output_control[3] = {static_cast<uint8_t>((this->height_ - 1) & 0xFF),
                                      static_cast<uint8_t>((this->height_ - 1) & 0xFF00),
                                      0x0 };
+  ESP_LOGD(TAG, "MUX (lower): 0x%X MUX (upper): 0x%X", output_control[0], output_control[1]);
   this->command_(0x01);
   this->send_data_(output_control, sizeof(output_control));
   //this->data_(0x27);
