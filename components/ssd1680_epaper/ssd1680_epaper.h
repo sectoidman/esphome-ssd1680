@@ -38,6 +38,8 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void send_data_(const uint8_t *data, size_t len);
   void full_update_();
   void display_frame_();
+  void configure_address_space_();
+
 
   GPIOPin *dc_pin_{nullptr};
   GPIOPin *reset_pin_{nullptr};

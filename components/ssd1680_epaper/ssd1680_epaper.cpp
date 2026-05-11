@@ -14,7 +14,7 @@ static const int SSD1680_DISPLAY_BUFFER_SIZE_BYTES = (296 * 176) / 8;
 void SSD1680EPaper::setup() {
   ESP_LOGI(TAG, "=== SSD1680 SETUP V4 - WITH POWER PIN ===");
 
-  this->display_size = (this->get_width_internal() * this->get_height_internal()) / 8;
+  this->display_size = (this->width_ * this->height_) / 8;
 
   // CRITICAL: Enable display power on GPIO7
   // The CrowPanel requires GPIO7 HIGH to power the e-paper display
@@ -124,6 +124,26 @@ void SSD1680EPaper::send_data_(const uint8_t *data, size_t len) {
   this->disable();
 }
 
+void SSD1680EPaper::configure_address_space_() {
+  // RAM X address
+  ESP_LOGD(TAG, "Setting RAM X (0x44)");
+  uint8_t x_start_end[2] = { 0x0, ((this->width_ - 8) / 8) + (this->width_ % 8 != 0) };
+  this->command_(0x44);
+  this->send_data_(&x_start_end, sizeof(x_start_end));
+  // this->data_(0x00);
+  // this->data_(0x0F);
+
+  // RAM Y address
+  ESP_LOGD(TAG, "Setting RAM Y (0x45)");
+  uint8_t y_start_end[4] = {0x0, 0x0, this->height_ & 0xFF, this->height_ & 0xFF00 };
+  this->command_(0x45);
+  this->send_data_(&y_start_end, sizeof(y_start_end));
+  //this->data_(0x00);
+  //this->data_(0x00);
+  //this->data_(0x27);
+  //this->data_(0x01);
+}
+
 void SSD1680EPaper::init_display_() {
   ESP_LOGI(TAG, ">>> INIT DISPLAY START <<<");
   
@@ -201,21 +221,9 @@ void SSD1680EPaper::init_display_() {
   ESP_LOGD(TAG, "Setting data entry mode (0x11)");
   this->command_(0x11);
   this->data_(0x03);
-  
-  // RAM X address
-  ESP_LOGD(TAG, "Setting RAM X (0x44)");
-  this->command_(0x44);
-  this->data_(0x00);
-  this->data_(0x0F);
-  
-  // RAM Y address  
-  ESP_LOGD(TAG, "Setting RAM Y (0x45)");
-  this->command_(0x45);
-  this->data_(0x00);
-  this->data_(0x00);
-  this->data_(0x27);
-  this->data_(0x01);
-  
+
+  this->configure_address_space_();
+
   // Border waveform
   ESP_LOGD(TAG, "Setting border (0x3C)");
   this->command_(0x3C);
@@ -292,23 +300,13 @@ void SSD1680EPaper::display_frame_() {
   this->data_(0x27);  // 296 - 1 = 0x127, low byte
   this->data_(0x01);  // high byte
   this->data_(0x00);  // GD=0, SM=0, TB=0
-  
+
   // Data entry mode
   this->command_(0x11);
   this->data_(0x03);  // X inc, Y inc
-  
-  // Set RAM X address
-  this->command_(0x44);
-  this->data_(0x00);
-  this->data_(0x0F);  // 16 bytes = 128 pixels
-  
-  // Set RAM Y address  
-  this->command_(0x45);
-  this->data_(0x00);
-  this->data_(0x00);
-  this->data_(0x27);
-  this->data_(0x01);
-  
+
+  this->configure_address_space_();
+
   // Set RAM address counters
   this->command_(0x4E);
   this->data_(0x00);
@@ -389,10 +387,10 @@ void SSD1680EPaper::update() {
 }
 
 void SSD1680EPaper::draw_absolute_pixel_internal(int x, int y, Color color) {
-  if (x < 0 || x >= this->get_width_internal() || y < 0 || y >= this->get_height_internal())
+  if (x < 0 || x >= this->width_ || y < 0 || y >= this->height_)
     return;
 
-  uint32_t pos = (y * (this->get_width_internal() / 8)) + (x / 8);
+  uint32_t pos = (y * (this->width_ / 8)) + (x / 8);
   uint8_t bit = 0x80 >> (x % 8);
 
   if (pos >= this->display_size)
