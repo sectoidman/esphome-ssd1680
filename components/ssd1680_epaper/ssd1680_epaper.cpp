@@ -13,7 +13,7 @@ static const char *const TAG = "ssd1680_epaper";
 void SSD1680EPaper::setup() {
   ESP_LOGI(TAG, "=== SSD1680 SETUP V4 - WITH POWER PIN ===");
 
-  this->display_size = 4736; // ((this->width_ % 8) ? (this->width_ / 8 + 1) : (this->width_ / 8)) * this-> height_; // (this->width_ * this->height_) / 8;
+  this->display_size = ((this->width_ % 8) ? (this->width_ / 8 + 1) : (this->width_ / 8)) * this-> height_; // (this->width_ * this->height_) / 8;
 
   // CRITICAL: Enable display power on GPIO7
   // The CrowPanel requires GPIO7 HIGH to power the e-paper display
