@@ -127,7 +127,7 @@ void SSD1680EPaper::configure_address_space_() {
   // RAM X address
   ESP_LOGD(TAG, "Setting RAM X (0x44)");
   const uint8_t x_start_end[2] = { 0x0,
-                                   static_cast<uint8_t>(((this->width_ - 8) / 8) + (this->width_ % 8 != 0)) };
+                                   static_cast<uint8_t>(((this->width_ + 7) / 8) - 1) };
 
   ESP_LOGD(TAG, "Start: 0x%X End: 0x%X", x_start_end[0], x_start_end[1]);
   this->command_(0x44);
@@ -403,7 +403,7 @@ void SSD1680EPaper::draw_absolute_pixel_internal(int x, int y, Color color) {
   if (x < 0 || x >= this->width_ || y < 0 || y >= this->height_)
     return;
 
-  uint32_t pos = (y * (this->width_ / 8)) + (x / 8);
+  uint32_t pos = (y * ((this->width_ + 7) / 8)) + (x / 8);
   uint8_t bit = 0x80 >> (x % 8);
 
   if (pos >= this->display_size)
