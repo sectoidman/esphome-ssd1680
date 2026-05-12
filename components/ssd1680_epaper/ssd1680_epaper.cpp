@@ -330,7 +330,7 @@ void SSD1680EPaper::display_frame_() {
   this->data_(0x00);
 
   // load data into display RAM
-  this->command(0x24);
+  this->command_(0x24);
   this->send_data_(this->buffer_, this->display_size);
 
   ESP_LOGD(TAG, "Frame written, starting update");
