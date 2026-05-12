@@ -294,23 +294,24 @@ void SSD1680EPaper::full_update_() {
 
 void SSD1680EPaper::display_frame_() {
   ESP_LOGD(TAG, "Writing frame to display");
-  
+
   // Hardware reset to recover from any stuck state
+  /*
   if (this->reset_pin_ != nullptr) {
     this->reset_pin_->digital_write(false);
     delay(10);
     this->reset_pin_->digital_write(true);
     delay(10);
   }
-  
+
   // Wait for display to be ready after reset
   this->wait_until_idle_();
-  
+
   // Re-send minimal init commands
   this->command_(0x12);  // SW reset
   delay(10);
   this->wait_until_idle_();
-  
+
   // Driver output control
   this->configure_driver_output_();
 
@@ -319,6 +320,7 @@ void SSD1680EPaper::display_frame_() {
   this->data_(0x03);  // X inc, Y inc
 
   this->configure_address_space_();
+  */
 
   // Set RAM address counters
   this->command_(0x4E);
@@ -326,30 +328,11 @@ void SSD1680EPaper::display_frame_() {
   this->command_(0x4F);
   this->data_(0x00);
   this->data_(0x00);
-  
-  // Write B/W RAM (0x24) - INVERT data for correct polarity
-  // This display: 0xFF = black, 0x00 = white (confirmed by testing)
-  // ESPHome buffer: bits set = foreground (COLOR_ON), cleared = background
-  // We need to invert so drawing shows up correctly
-  this->command_(0x24);
-  for (uint32_t i = 0; i < this->display_size; i++) {
-    this->data_(~this->buffer_[i]);  // INVERTED for correct polarity
-  }
-  
-  // Write RED RAM (0x26) - all 0x00 to not interfere
-  this->command_(0x4E);
-  this->data_(0x00);
-  this->command_(0x4F);
-  this->data_(0x00);
-  this->data_(0x00);
-  
-  this->command_(0x26);
-  for (uint32_t i = 0; i < this->display_size; i++) {
-    this->data_(0x00);
-  }
-  
-  this->wait_until_idle_();
-  
+
+  // load data into display RAM
+  this->command(0x24);
+  this->send_data_(this->buffer_, this->display_size);
+
   ESP_LOGD(TAG, "Frame written, starting update");
   this->full_update_();
   ESP_LOGD(TAG, "Display update complete");
