@@ -55,7 +55,7 @@ async def to_code(config):
     cg.add(var.set_dc_pin(dc))
 
     if CONF_INVERT in config:
-        cg.add(var.invert_color(config[CONF_INVERT])
+        cg.add(var.invert_color(config[CONF_INVERT]))
 
     if CONF_RESET_PIN in config:
         reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
