@@ -10,7 +10,8 @@ from esphome.const import (
     CONF_RESET_PIN,
     CONF_BUSY_PIN,
     CONF_HEIGHT,
-    CONF_WIDTH
+    CONF_WIDTH,
+    CONF_INVERT
 )
 
 DEPENDENCIES = ["spi"]
@@ -34,6 +35,7 @@ CONFIG_SCHEMA = (
             cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
+            cv.Optional(CONF_INVERT): cv.boolean
         }
     )
     .extend(cv.polling_component_schema("60s"))
@@ -51,6 +53,9 @@ async def to_code(config):
 
     dc = await cg.gpio_pin_expression(config[CONF_DC_PIN])
     cg.add(var.set_dc_pin(dc))
+
+    if CONF_INVERT in config:
+        cg.add(var.invert_color(config[CONF_INVERT])
 
     if CONF_RESET_PIN in config:
         reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])

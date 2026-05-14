@@ -249,7 +249,7 @@ void SSD1680EPaper::init_display_() {
   ESP_LOGD(TAG, "Setting temp sensor (0x18)");
   this->command_(0x18);
   this->data_(0x80);
-  
+
   // RAM counters
   this->command_(0x4E);
   this->data_(0x00);
@@ -286,11 +286,21 @@ void SSD1680EPaper::full_update_() {
     delay(100);
     App.feed_wdt();
   }
-  
+
   if (millis() - start < 5000) {
     ESP_LOGD(TAG, "Update completed in %lu ms", millis() - start);
   }
 }
+
+/*
+void SSD1680EPaper::fast_update_()
+{
+  ESP_LOGD(TAG, "Fast refresh with 0xC7");
+  this->command_(0x22);
+  this->data_(0xC7);
+  this->command_(0x20);
+}
+*/
 
 void SSD1680EPaper::display_frame_() {
   ESP_LOGD(TAG, "Writing frame to display");
@@ -332,6 +342,18 @@ void SSD1680EPaper::display_frame_() {
   // load data into display RAM
   this->command_(0x24);
   this->send_data_(this->buffer_, this->display_size);
+
+  // configure pixels inverted or not
+  if (this->invert_colors_)
+  {
+      this->command_(0x21);
+      this->data_(0x0);
+  }
+  else
+  {
+      this->command_(0x21);
+      this->data_(0x8);
+  }
 
   ESP_LOGD(TAG, "Frame written, starting update");
   this->full_update_();

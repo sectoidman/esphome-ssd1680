@@ -17,6 +17,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void set_busy_pin(GPIOPin *busy_pin) { busy_pin_ = busy_pin; }
   void set_height(int height) { height_ = height; }
   void set_width(int width) { width_ = width; }
+  void invert_colors(bool invert) { invert_colors_ = invert; }
 
   void setup() override;
   void dump_config() override;
@@ -47,6 +48,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
   GPIOPin *busy_pin_{nullptr};
 
   bool initialized_{false};
+  bool invert_colors_{false};
 
   int height_{0};
   int width_{0};
