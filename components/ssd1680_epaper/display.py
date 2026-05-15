@@ -11,7 +11,8 @@ from esphome.const import (
     CONF_BUSY_PIN,
     CONF_HEIGHT,
     CONF_WIDTH,
-    CONF_INVERT
+    CONF_INVERT,
+    CONF_FULL_UPDATE_EVERY
 )
 
 DEPENDENCIES = ["spi"]
