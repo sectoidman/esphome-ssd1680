@@ -400,7 +400,10 @@ void SSD1680EPaper::update() {
     gpio_set_level(GPIO_NUM_47, 1);  // Keep high (not in reset)
     ESP_LOGI(TAG, "=== END PIN SWAP TEST ===");
     ESP_LOGI(TAG, "");
-    
+
+    // ensure first display_frame call is a full refresh
+    this->full_update_counter_ = this->full_update_count_;
+
     this->init_display_();
     this->initialized_ = true;
     
