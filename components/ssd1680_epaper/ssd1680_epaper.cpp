@@ -266,41 +266,22 @@ void SSD1680EPaper::init_display_() {
 
 void SSD1680EPaper::full_update_() {
   ESP_LOGD(TAG, "Full refresh with 0xF7");
-  
   // 0xF7 = Enable clock, Load temperature, Load LUT, Display, Disable Analog, Disable OSC
   // This is the full sequence that actually refreshes the e-paper panel
   this->command_(0x22);
   this->data_(0xF7);
   this->command_(0x20);
-  
-  // Wait for refresh to complete
-  // Note: BUSY pin may not go LOW on this display, but refresh still works
-  // Typical full refresh takes 2-4 seconds
-  uint32_t start = millis();
-  while (this->busy_pin_ != nullptr && this->busy_pin_->digital_read()) {
-    if (millis() - start > 5000) {  // 5 second timeout
-      // This is normal - BUSY doesn't always go LOW on this display
-      ESP_LOGD(TAG, "Update timeout (normal for this display) - took %lu ms", millis() - start);
-      break;
-    }
-    delay(100);
-    App.feed_wdt();
-  }
-
-  if (millis() - start < 5000) {
-    ESP_LOGD(TAG, "Update completed in %lu ms", millis() - start);
-  }
 }
 
-/*
+
 void SSD1680EPaper::fast_update_()
 {
-  ESP_LOGD(TAG, "Fast refresh with 0xC7");
+  ESP_LOGD(TAG, "Fast refresh with 0xFF");
   this->command_(0x22);
-  this->data_(0xC7);
+  this->data_(0xFF);
   this->command_(0x20);
 }
-*/
+
 
 void SSD1680EPaper::display_frame_() {
   ESP_LOGD(TAG, "Writing frame to display");
@@ -356,7 +337,36 @@ void SSD1680EPaper::display_frame_() {
   }
 
   ESP_LOGD(TAG, "Frame written, starting update");
-  this->full_update_();
+
+  if (this->full_update_counter_ >= this->full_update_count_)
+  {
+      this->full_update_();
+      this->full_update_counter_ = 0;
+  }
+  else
+  {
+      this->fast_update_();
+      this->full_update_counter_++;
+  }
+
+  // Wait for refresh to complete
+  // Note: BUSY pin may not go LOW on this display, but refresh still works
+  // Typical full refresh takes 2-4 seconds
+  uint32_t start = millis();
+  while (this->busy_pin_ != nullptr && this->busy_pin_->digital_read()) {
+    if (millis() - start > 5000) {  // 5 second timeout
+      // This is normal - BUSY doesn't always go LOW on this display
+      ESP_LOGD(TAG, "Update timeout (normal for this display) - took %lu ms", millis() - start);
+      break;
+    }
+    delay(100);
+    App.feed_wdt();
+  }
+
+  if (millis() - start < 5000) {
+    ESP_LOGD(TAG, "Update completed in %lu ms", millis() - start);
+  }
+
   ESP_LOGD(TAG, "Display update complete");
 }
 

@@ -35,7 +35,8 @@ CONFIG_SCHEMA = (
             cv.Required(CONF_DC_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_BUSY_PIN): pins.gpio_input_pin_schema,
-            cv.Optional(CONF_INVERT): cv.boolean
+            cv.Optional(CONF_INVERT): cv.boolean,
+            cv.Optional(CONF_FULL_UPDATE_EVERY): cv.int_range(min=0)
         }
     )
     .extend(cv.polling_component_schema("60s"))
@@ -56,6 +57,9 @@ async def to_code(config):
 
     if CONF_INVERT in config:
         cg.add(var.invert_color(config[CONF_INVERT]))
+
+    if CONF_FULL_UPDATE_EVERY in config:
+        cg.add(var.set_full_update_count(config[CONF_FULL_UPDATE_EVERY]))
 
     if CONF_RESET_PIN in config:
         reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])

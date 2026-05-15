@@ -18,6 +18,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void set_height(int height) { height_ = height; }
   void set_width(int width) { width_ = width; }
   void invert_colors(bool invert) { invert_colors_ = invert; }
+  void set_full_update_count(int count) { full_update_count_ = count; }
 
   void setup() override;
   void dump_config() override;
@@ -38,6 +39,7 @@ class SSD1680EPaper : public display::DisplayBuffer,
   void data_(uint8_t data);
   void send_data_(const uint8_t *data, size_t len);
   void full_update_();
+  void fast_update_();
   void display_frame_();
   void configure_address_space_();
   void configure_driver_output_();
@@ -53,6 +55,8 @@ class SSD1680EPaper : public display::DisplayBuffer,
   int height_{0};
   int width_{0};
   int display_size{0};
+  int full_update_count_{0};
+  int full_update_counter_{0};
 };
 
 }  // namespace ssd1680_epaper
