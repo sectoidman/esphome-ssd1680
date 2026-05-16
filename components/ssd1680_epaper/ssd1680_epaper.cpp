@@ -320,13 +320,6 @@ void SSD1680EPaper::display_frame_() {
   this->data_(0x00);
   this->data_(0x00);
 
-  // clear RED / alternate register
-  this->command_(0x26);
-  for (int i = 0; i < this->display_size; i++)
-  {
-      this->data_(0xFF);
-  }
-
   // load data into display RAM
   this->command_(0x24);
   this->send_data_(this->buffer_, this->display_size);
