@@ -19,8 +19,13 @@ A custom ESPHome component for SSD1680-based e-paper displays, specifically deve
   - Driver: SSD1680Z
   - ESP32-S3 based
 
+- [Elecrow CrowPanel ESP32 2.13" E-Paper HMI Display](https://www.elecrow.com/wiki/CrowPanel_ESP32_E-Paper_HMI_2.13-inch_Display.html)
+  - Resolution: 122x250 pixels
+  - Driver: SSD1680Z
+  - ESP32-S3 based
+
 ### Should Work (Untested)
-- Other 2.9" SSD1680-based e-paper displays
+- Other SSD1680-based e-paper displays
 - Good Display GDEW029T5
 - Waveshare 2.9" V2 (SSD1680)
 
@@ -63,12 +68,16 @@ spi:
 display:
   - platform: ssd1680_epaper
     id: epaper_display
+    width: 122
+    height: 250
     cs_pin: GPIO45
     dc_pin: GPIO46
     reset_pin: GPIO47
     busy_pin: GPIO48
     rotation: 270
     update_interval: 60s
+    full_update_every: 0
+    invert: false
     lambda: |-
       it.printf(64, 148, id(my_font), TextAlign::CENTER, "Hello World!");
 ```
@@ -118,6 +127,8 @@ spi:
 display:
   - platform: ssd1680_epaper
     id: epaper_display
+    width: 128
+    height: 296
     cs_pin:
       number: GPIO45
       ignore_strapping_warning: true
@@ -131,10 +142,10 @@ display:
     lambda: |-
       // Fill background with white
       it.fill(COLOR_OFF);
-      
+
       // Draw title
       it.printf(it.get_width()/2, 10, id(font_title), COLOR_ON, TextAlign::TOP_CENTER, "E-Paper Display");
-      
+
       // Draw time if available
       if (id(ha_time).now().is_valid()) {
         it.strftime(it.get_width()/2, 50, id(font_large), COLOR_ON, TextAlign::TOP_CENTER, "%H:%M", id(ha_time).now());
@@ -188,10 +199,14 @@ time:
 |--------|----------|-------------|
 | `cs_pin` | Yes | SPI Chip Select pin |
 | `dc_pin` | Yes | Data/Command pin |
+| `width` | Yes | Display width |
+| `height` | Yes | Display height |
 | `reset_pin` | No | Hardware reset pin (recommended) |
 | `busy_pin` | No | Busy status pin (recommended) |
 | `rotation` | No | Display rotation (0, 90, 180, 270) |
 | `update_interval` | No | How often to refresh (default: 60s) |
+| `invert` | No | Invert pixel color, e.g. pixel ON = WHITE, OFF = BLACK (default: false) |
+| `full_update_every` | No | How many partial refreshes until a full refresh (default: 0 - always do a full refresh) |
 | `lambda` | No | Drawing code |
 
 ## Drawing
@@ -223,28 +238,31 @@ lambda: |-
 ## Troubleshooting
 
 ### Display not updating
+0. Is the device powered?
 1. Check all pin connections
 2. Verify the BUSY pin is connected - without it, timing may be off
-3. E-paper full refresh takes 2-4 seconds; the timeout warning in logs is often normal
+3. E-paper full refresh takes about 1 second.
 
 ### Inverted colors
-The component handles pixel polarity inversion internally. If colors appear inverted, there may be a display variant issue - please open an issue.
+You can use the `invert:` configuration option to turn on or off the pixel inversion feature controlled by command `0x21` "display update control 1" bits 0-3
 
 ### Timeout warnings in logs
 Messages like "Update timeout after 5000 ms" are often normal. The SSD1680's BUSY pin doesn't always behave as expected, but the display typically still updates correctly.
 
 ### Ghosting or artifacts
 E-paper displays can retain previous images. Try:
-- Doing a few full refreshes
+- Doing full refreshes instead of partial ones
 - Power cycling the device
-- This is normal e-paper behavior, not a driver issue
+- ~~This is normal e-paper behavior, not a driver issue~~ skill issue, claude - you can always write a better driver that takes into account the properties of what it's driving.
 
 ## Technical Notes
 
-- Uses 0xF7 update sequence for full refresh with internal LUT
-- Pixel data is inverted before sending (this display uses inverted polarity)
+- Uses 0xF7 update sequence for full refresh with internal LUT on full refreshes, and the 0xFF update sequence for partial refreshes
+- ~~Pixel data is inverted before sending (this display uses inverted polarity)~~ The chip *has* the ability to invert the display ram, you just need to configure it properly.
 - BUSY pin behavior varies; timeout is handled gracefully
-- Full refresh takes approximately 2-4 seconds
+- Full refresh takes approximately 1 second now that it's been optimized a bit
+- Display height and width are now customizable (and indeed, mandatory configuration options) for different panel sizes using this chip - tested with the Elecrow DIE01021S 122x250 2.13in E-Paper display ESP32-S3 dev board that also uses the SSD1680.
+- I recommend using an `update_interval` of `never` and directly calling the `component.update` action on the screen when you want to update it, e.g. as an action in an `on_value` automation for a sensor with appropriate filtering - this is going to be the most power-efficient way if you're running on batteries, and cause the least wear and tear to the screen.
 
 ## Contributing
 
